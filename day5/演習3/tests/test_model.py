@@ -102,6 +102,7 @@ def train_model(sample_data, preprocessor):
     return model, X_test, y_test
 
 
+@pytest.fixture
 def test_model_exists():
     """モデルファイルが存在するか確認"""
     if not os.path.exists(MODEL_PATH):
@@ -109,6 +110,7 @@ def test_model_exists():
     assert os.path.exists(MODEL_PATH), "モデルファイルが存在しません"
 
 
+@pytest.fixture
 def test_model_accuracy(train_model):
     """モデルの精度を検証"""
     model, X_test, y_test = train_model
@@ -121,6 +123,7 @@ def test_model_accuracy(train_model):
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
 
 
+@pytest.fixture
 def test_model_inference_time(train_model):
     """モデルの推論時間を検証"""
     model, X_test, _ = train_model
@@ -136,6 +139,7 @@ def test_model_inference_time(train_model):
     assert inference_time < 1.0, f"推論時間が長すぎます: {inference_time}秒"
 
 
+@pytest.fixture
 def test_model_reproducibility(sample_data, preprocessor):
     """モデルの再現性を検証"""
     # データの分割
