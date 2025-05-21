@@ -173,34 +173,41 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
+
 def test_compare_with_baseline_model(train_model):
     """現在のモデルがベースラインモデルより性能が悪化していないことを検証"""
     current_model, X_test, y_test = train_model
-    
+
     # ベースラインモデルのパス（過去のモデルが保存されている場所）
-    baseline_model_path = os.path.join(os.path.dirname(__file__), "../models/baseline_titanic_model.pkl")
-    
+    baseline_model_path = os.path.join(
+        os.path.dirname(__file__), "../models/baseline_titanic_model.pkl"
+    )
+
     # ベースラインモデルが存在しない場合は現在のモデルをベースラインとして保存
     if not os.path.exists(baseline_model_path):
         with open(baseline_model_path, "wb") as f:
             pickle.dump(current_model, f)
-        pytest.skip("ベースラインモデルが存在しないため、現在のモデルをベースラインとして保存しました")
-    
+        pytest.skip(
+            "ベースラインモデルが存在しないため、現在のモデルをベースラインとして保存しました"
+        )
+
     # ベースラインモデルをロード
     with open(baseline_model_path, "rb") as f:
         baseline_model = pickle.load(f)
-    
+
     # 両方のモデルで予測して精度を計算
     current_predictions = current_model.predict(X_test)
     baseline_predictions = baseline_model.predict(X_test)
-    
+
     current_accuracy = accuracy_score(y_test, current_predictions)
     baseline_accuracy = accuracy_score(y_test, baseline_predictions)
-    
+
     # 現在のモデルがベースラインモデル以上の精度であることを確認
     # 許容誤差5%以内なら合格
-    assert current_accuracy >= baseline_accuracy * 0.95, \
-        f"現在のモデル精度({current_accuracy:.4f})がベースラインモデル精度({baseline_accuracy:.4f})の95%未満です"
+    assert (
+        current_accuracy >= baseline_accuracy * 0.95
+    ), f"現在のモデル精度({current_accuracy:.4f})がベースラインモデル精度({baseline_accuracy:.4f})の95%未満です"
+
 
 def test_condo_matrix(train_model):
     """混同行列を検証"""
@@ -214,23 +221,31 @@ def test_condo_matrix(train_model):
     tn, fp, fn, tp = cm.ravel()
 
     # メトリクス計算
-    precision = tp / (tp+fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp+fn) if (tp + fn) > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-    
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
+
     print(f"混同行列:\n{cm}")
     print(f"真陽性(TP): {tp}, 真陰性(TN): {tn}")
     print(f"偽陽性(FP): {fp}, 偽陰性(FN): {fn}")
     print(f"精度(Precision): {precision:.4f}")
     print(f"再現率(Recall): {recall:.4f}")
     print(f"F1スコア: {f1:.4f}")
-    
+
     # 精度、再現率、F1スコアの閾値を設定
     precision_threshold = 0.6
     recall_threshold = 0.6
     f1_threshold = 0.6
-    
+
     # 精度、再現率、F1スコアが閾値を満たすことを確認
-    assert precision >= precision_threshold, f"精度が閾値を下回っています: {precision:.4f}"
+    assert (
+        precision >= precision_threshold
+    ), f"精度が閾値を下回っています: {precision:.4f}"
+
     assert recall >= recall_threshold, f"再現率が閾値を下回っています: {recall:.4f}"
+
     assert f1 >= f1_threshold, f"F1スコアが閾値を下回っています: {f1:.4f}"
